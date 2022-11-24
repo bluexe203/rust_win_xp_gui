@@ -17,8 +17,8 @@ fn main() {
             param2: 0,
             param3: 0,
         };
-        let mut window = BaseWindow::new(0, 0, 640, 480, "base_window_class", "test", test);
-        if window.create_window() {
+        let mut window = BaseWindow::new(CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, "base_window_class", "test", test);
+        if window.create_window(None) {
             // メッセージマップの登録(WM_PAINT, WM_LBUTTONUP)
             window.add_message_map(WM_PAINT, on_paint);
             window.add_message_map(WM_LBUTTONUP, on_lbutton_up);
@@ -26,6 +26,7 @@ fn main() {
             let hwnd = window.get_hwnd();
             ShowWindow(hwnd, SW_NORMAL);
             UpdateWindow(hwnd);
+
             let mut msg = mem::zeroed::<MSG>();
             loop {
                 if GetMessageW(&mut msg, 0, 0, 0) == 0 {
@@ -44,7 +45,7 @@ fn on_paint(
     msg: u32,
     wparam: WPARAM,
     lparam: LPARAM,
-) -> bool {
+) -> LRESULT {
     let mut content = window.get_content_mut();
     unsafe {
         let mut ps = mem::zeroed::<PAINTSTRUCT>();
@@ -54,7 +55,7 @@ fn on_paint(
         TextOutW(hdc, 100, 100, wstr.as_ptr(), wstr.len() as i32 - 1);
         EndPaint(hwnd , &mut ps);
     }
-    false // falseの場合DefWindowProcWを呼び出す。
+    0 // 0の場合DefWindowProcWを呼び出す。
 }
 
 fn on_lbutton_up(
@@ -63,7 +64,7 @@ fn on_lbutton_up(
     msg: u32,
     wparam: WPARAM,
     lparam: LPARAM,
-) -> bool {
+) -> LRESULT {
     let mut content = window.get_content_mut();
     content.param1 = content.param1 + 1;
     unsafe {
@@ -76,5 +77,5 @@ fn on_lbutton_up(
         );
         InvalidateRect(hwnd, ptr::null_mut(), 0);
     }
-    false // falseの場合DefWindowProcWを呼び出す。
+    0 // 0の場合DefWindowProcWを呼び出す。
 }
